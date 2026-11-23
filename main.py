@@ -1,16 +1,18 @@
-import requests
 import time
 import re
 
 from user_database import *
+from client_id import create_session, get_client_id
+
+session = create_session()
 
 
 def get_user_id(permalink, client_id):
     url = f"https://api-v2.soundcloud.com/resolve?url=https://soundcloud.com/{permalink}&client_id={client_id}"
-    response = requests.get(url)
+    response = session.get(url, timeout=30)
     while response.status_code != 200:
         time.sleep(0.5)
-        response = requests.get(url)
+        response = session.get(url, timeout=30)
     return response.json()['id']
 
 
@@ -19,7 +21,7 @@ def get_followers(user_id, client_id):
     url = f"https://api-v2.soundcloud.com/users/{user_id}/followers?limit=200&client_id={client_id}"
 
     while url:
-        response = requests.get(url)
+        response = session.get(url, timeout=30)
         if response.status_code != 200:
             print(f"Failed to get followers: {response.status_code}. Retrying...")
             time.sleep(0.5)
@@ -37,10 +39,10 @@ def get_followers(user_id, client_id):
 
 def get_follower_details(follower_id, client_id):
     url = f"https://api-v2.soundcloud.com/users/{follower_id}?client_id={client_id}"
-    response = requests.get(url)
+    response = session.get(url, timeout=30)
     while response.status_code != 200:
         time.sleep(0.5)
-        response = requests.get(url)
+        response = session.get(url, timeout=30)
     return response.json()
 
 def extract_username(url):
@@ -61,7 +63,7 @@ def display_all_entries():
         print("No entries found in the database.")
 
 def main():
-    client_id = 'PUT CLIENT_ID HERE'
+    client_id = get_client_id()
     setup_database()
 
     print("Please choose an option:")
